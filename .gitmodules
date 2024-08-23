@@ -1,0 +1,7 @@
+[submodule "easytask_nest_backend"]
+	path = easytask_nest_backend
+	url = git@github.com:Ankit006/easytask_nest_backend.git
+
+[submodule "easytask_next_frontend"]
+	path = easytask_next_frontend
+	url = git@github.com:Ankit006/easytask_next_frontend.git

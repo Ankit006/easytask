@@ -1,0 +1,62 @@
+services:
+  backend:
+    image: node:20-alpine
+    container_name: easytask_backend
+    command: sh -c "npm install -g pnpm@latest && pnpm install && pnpm db:generate && pnpm start:dev"
+    working_dir: /app
+    ports:
+      - 3000:3000
+    volumes:
+      - ./easytask_nest_backend:/app
+    environment:
+      TOKEN_SECRET: 6e9fe7860a0e22bbf9b61f259aa9ab9021387163ac7b6fe68576dc2ad2594ce698444d7ccfce219b25194c815e7832f18145efb1f75891812b73db3ee1464087
+      POSTGRES_CONNECTION_STRING: postgres://postgres:password@postgresql:5432
+    depends_on:
+      - postgresql
+      - redis
+  bun:
+    image: oven/bun:alpine
+    working_dir: /app
+    volumes:
+      - ./easytask_nest_backend:/app
+    command: sh -c "cd src/database && bun database.migration.ts"
+    environment:
+      POSTGRES_CONNECTION_STRING: postgres://postgres:password@postgresql:5432
+    depends_on:
+      - backend
+      - postgresql
+  frontend:
+    image: node:20-alpine
+    container_name: easytask_frontend
+    working_dir: /app
+    volumes:
+      - ./easytask_next_frontend:/app
+    command: sh -c "npm install -g pnpm@latest && pnpm install && pnpm dev"
+    ports:
+      - 5173:5173
+    depends_on:
+      - backend
+  postgresql:
+    image: postgres:16-alpine
+    container_name: easytask_db
+    volumes:
+      - easytask-db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: easytask
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: easytask_cache
+    volumes:
+      - cache-db:/data
+    ports:
+      - 6379:6379
+
+volumes:
+  easytask-db:
+    driver: local
+  cache-db:
+    driver: local
